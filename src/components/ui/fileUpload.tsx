@@ -1,79 +1,95 @@
-import React, { useCallback, useState } from 'react'
-import { useDropzone } from 'react-dropzone'
-import { UploadIcon, XIcon, FileIcon, CheckIcon } from 'lucide-react'
+import React, { useCallback, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { UploadIcon, XIcon, FileIcon, CheckIcon } from 'lucide-react';
+
 type FileUploadProps = {
-  onFileAccepted: (file: File) => void
-  maxSizeMB?: number
-  acceptedFormats?: string[]
-}
+  onFileAccepted: (file: File) => void;
+  maxSizeMB?: number;
+  acceptedFormats?: string[];
+};
+
 export function FileUpload({
   onFileAccepted,
   maxSizeMB = 100,
-  acceptedFormats = ['video/mp4', 'video/avi', 'video/quicktime'],
+  acceptedFormats = ['video/mp4', 'video/avi', 'video/quicktime', 'image/jpeg', 'image/png'],
 }: FileUploadProps) {
-  const [file, setFile] = useState<File | null>(null)
-  const [progress, setProgress] = useState(0)
-  const [error, setError] = useState<string | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const maxSizeBytes = maxSizeMB * 1024 * 1024
+  const [file, setFile] = useState<File | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const maxSizeBytes = maxSizeMB * 1024 * 1024;
+
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
-      const selectedFile = acceptedFiles[0]
-      if (!selectedFile) return
+      const selectedFile = acceptedFiles[0];
+      if (!selectedFile) return;
+
       if (selectedFile.size > maxSizeBytes) {
-        setError(`File size exceeds the ${maxSizeMB}MB limit`)
-        return
+        setError(`File size exceeds the ${maxSizeMB}MB limit`);
+        return;
       }
-      setFile(selectedFile)
-      setError(null)
+
+      setFile(selectedFile);
+      setError(null);
+      setIsUploading(true);
+
       // Simulate upload progress
-      setIsUploading(true)
-      let progress = 0
+      let progress = 0;
       const interval = setInterval(() => {
-        progress += 5
-        setProgress(progress)
+        progress += 5;
+        setProgress(progress);
         if (progress >= 100) {
-          clearInterval(interval)
-          setIsUploading(false)
-          onFileAccepted(selectedFile)
+          clearInterval(interval);
+          setIsUploading(false);
+          onFileAccepted(selectedFile);
         }
-      }, 100)
+      }, 100);
     },
     [maxSizeBytes, maxSizeMB, onFileAccepted],
-  )
+  );
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'video/*': acceptedFormats,
+      'video/*': ['.mp4', '.avi', '.mov'],
+      'image/*': ['.jpg', '.jpeg', '.png'],
     },
     maxFiles: 1,
-  })
+  });
+
   const removeFile = () => {
-    setFile(null)
-    setProgress(0)
-    setError(null)
-  }
+    setFile(null);
+    setProgress(0);
+    setError(null);
+  };
+
   const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return bytes + ' bytes'
-    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'
-    return (bytes / 1048576).toFixed(1) + ' MB'
-  }
+    if (bytes < 1024) return bytes + ' bytes';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  };
+
   return (
     <div className="w-full">
       {!file ? (
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${isDragActive ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400'}`}
+          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+            isDragActive
+              ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+              : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400'
+          }`}
         >
           <input {...getInputProps()} />
           <UploadIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
           <p className="mt-2 text-gray-700 dark:text-gray-300">
             {isDragActive
-              ? 'Drop the video file here...'
-              : 'Drag and drop a video file here, or click to select'}
+              ? 'Drop the file here...'
+              : 'Drag and drop an image or video file here, or click to select'}
           </p>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Accepted formats: MP4, AVI, MOV (Max: {maxSizeMB}MB)
+            Accepted formats: MP4, AVI, MOV, JPG, PNG (Max: {maxSizeMB}MB)
           </p>
         </div>
       ) : (
@@ -123,12 +139,10 @@ export function FileUpload({
             </div>
           )}
           {error && (
-            <p className="mt-2 text-sm text-red-600 dark:text-red-400">
-              {error}
-            </p>
+            <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
           )}
         </div>
       )}
     </div>
-  )
+  );
 }
