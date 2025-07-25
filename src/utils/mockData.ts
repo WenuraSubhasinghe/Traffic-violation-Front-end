@@ -120,44 +120,17 @@ export const accidentData = {
 }
 // Lane Path Violation Data
 export const laneViolationData = {
-  sampleVideo:
-    'https://assets.mixkit.co/videos/preview/mixkit-traffic-in-the-city-at-night-time-lapse-11232-large.mp4',
-  detections: [
+  sampleVideo: 'src/inputs/lane_change.mp4',
+  summary: {
+    total_vehicles: 24,
+    total_lane_changes: 1,
+  },
+  lane_changes: [
     {
-      time: 1.8,
-      type: 'Lane',
-      description: 'Illegal lane crossing',
-      confidence: 0.93,
-      boundingBox: { x: 0.4, y: 0.5, width: 0.2, height: 0.15 },
+      vehicle_id: 2,
+      plate_number: '', // Add plate number if available
+      timestamp: '0:07',
     },
-    {
-      time: 4.2,
-      type: 'Lane',
-      description: 'Improper lane change without signal',
-      confidence: 0.89,
-      boundingBox: { x: 0.6, y: 0.5, width: 0.2, height: 0.15 },
-    },
-    {
-      time: 7.5,
-      type: 'Lane',
-      description: 'Driving on road markings',
-      confidence: 0.91,
-      boundingBox: { x: 0.3, y: 0.5, width: 0.2, height: 0.15 },
-    },
-  ],
-  violationTypes: [
-    { name: 'Illegal Crossing', value: 42 },
-    { name: 'No Signal', value: 28 },
-    { name: 'Wrong Lane', value: 18 },
-    { name: 'Road Markings', value: 12 },
-  ],
-  timeDistribution: [
-    { time: '6AM-10AM', count: 68 },
-    { time: '10AM-2PM', count: 42 },
-    { time: '2PM-6PM', count: 89 },
-    { time: '6PM-10PM', count: 113 },
-    { time: '10PM-2AM', count: 72 },
-    { time: '2AM-6AM', count: 28 },
   ],
 }
 // Traffic Light Violation Data
@@ -369,5 +342,22 @@ export const systemAnalysisData = {
     { day: 'Friday', uptime: 99.8 },
     { day: 'Saturday', uptime: 99.9 },
     { day: 'Sunday', uptime: 100 },
+  ],
+}
+
+// U-Turn Detection Data
+export const uTurnDetectionData = {
+  sampleVideo: 'src/inputs/uturn_output.mp4',
+  summary: {
+    total_vehicles: 20,
+    total_u_turns: 1,
+  },
+  uturns: [
+    {
+      vehicle_id: 4,
+      plate_number: '301 - 8846',
+      angle: 180.0,
+      timestamp: '0:09',
+    },
   ],
 }

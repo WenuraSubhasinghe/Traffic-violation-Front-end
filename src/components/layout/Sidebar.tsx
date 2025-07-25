@@ -9,6 +9,7 @@ import {
   AlertTriangleIcon,
   XIcon,
   BoxIcon,
+  RotateCcwIcon,
 } from 'lucide-react'
 type SidebarProps = {
   isOpen: boolean
@@ -56,6 +57,11 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       name: 'Road Sign',
       path: '/road-sign',
       icon: AlertTriangleIcon,
+    },
+    {
+      name: 'U-Turn Detection',
+      path: '/u-turn-detection',
+      icon: RotateCcwIcon,
     },
   ]
   return (

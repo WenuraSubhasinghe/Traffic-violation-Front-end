@@ -76,21 +76,18 @@ export function LanePathViolation() {
               <Card title="Analysis Results">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div>
-                    <VideoPlayer
-                      src={laneViolationData.sampleVideo}
-                    />
+                    <VideoPlayer src={laneViolationData.sampleVideo} />
                   </div>
                   <div>
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                      Detection Summary
+                      Lane Change Detection Results
                     </h3>
                     <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 p-4 mb-6">
                       <div className="flex">
                         <AlertCircleIcon className="h-5 w-5 text-blue-400" />
                         <div className="ml-3">
                           <p className="text-sm text-blue-700 dark:text-blue-300">
-                            Lane violations detected with 93% confidence. 3
-                            violations identified.
+                            {laneViolationData.summary.total_lane_changes} lane change detected from {laneViolationData.summary.total_vehicles} vehicles tracked.
                           </p>
                         </div>
                       </div>
@@ -98,140 +95,28 @@ export function LanePathViolation() {
                     <div className="space-y-4">
                       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                         <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Violation Details
+                          Lane Change Details
                         </h4>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Total Violations
-                            </p>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              3
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Primary Type
-                            </p>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              Illegal Lane Crossing
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Average Confidence
-                            </p>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              91%
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Location Type
-                            </p>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              Urban Intersection
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Violation Breakdown
-                        </h4>
-                        <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                          {laneViolationData.detections.map(
-                            (detection, index) => (
-                              <li key={index} className="flex items-center">
-                                <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                                {detection.description} at{' '}
-                                {Math.floor(detection.time / 60)}:
-                                {(detection.time % 60)
-                                  .toString()
-                                  .padStart(2, '0')}
-                              </li>
-                            ),
-                          )}
-                        </ul>
-                      </div>
-                      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Recommended Actions
-                        </h4>
-                        <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                          <li className="flex items-center">
-                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                            Issue citation for lane violation
-                          </li>
-                          <li className="flex items-center">
-                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                            Flag location for increased monitoring
-                          </li>
-                          <li className="flex items-center">
-                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                            Review lane markings visibility
-                          </li>
+                        <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                          {laneViolationData.lane_changes.map((change, idx) => (
+                            <li key={idx} className="flex flex-col">
+                              <span>
+                                <strong>Vehicle ID:</strong> {change.vehicle_id}
+                              </span>
+                              <span>
+                                <strong>Plate number:</strong> {change.plate_number || 'N/A'}
+                              </span>
+                              <span>
+                                <strong>Time:</strong> {change.timestamp}
+                              </span>
+                            </li>
+                          ))}
                         </ul>
                       </div>
                     </div>
                   </div>
                 </div>
               </Card>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card title="Lane Violation Types">
-                  <div className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={laneViolationData.violationTypes}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, percent }) =>
-                            `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`
-                          }
-                        >
-                          {laneViolationData.violationTypes.map(
-                            (entry, index) => (
-                              <Cell
-                                key={`cell-${index}`}
-                                fill={COLORS[index % COLORS.length]}
-                              />
-                            ),
-                          )}
-                        </Pie>
-                        <Tooltip />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </Card>
-                <Card title="Time Distribution of Lane Violations">
-                  <div className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={laneViolationData.timeDistribution}
-                        margin={{
-                          top: 20,
-                          right: 30,
-                          left: 20,
-                          bottom: 5,
-                        }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="time" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="count" name="Violations" fill="#3B82F6" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </Card>
-              </div>
             </>
           )}
         </div>

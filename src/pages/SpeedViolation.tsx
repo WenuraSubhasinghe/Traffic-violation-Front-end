@@ -57,7 +57,7 @@ export function SpeedViolation() {
         <>
           <Card title="Detection Results" className="mb-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <VideoPlayer src={response.annotated_video_url} />
+              <VideoPlayer src="src/inputs/speed_output.mp4" />
               <div>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                   Violation Summary
