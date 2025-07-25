@@ -20,7 +20,7 @@ import {
   AlertCircleIcon,
   UploadIcon,
 } from 'lucide-react'
-import { accidentFraudData } from '../utils/mockData'
+import { accidentFraudData, trafficLightData } from '../utils/mockData'
 import { Card } from '../components/ui/card'
 import { FileUpload } from '../components/ui/fileUpload'
 import { VideoPlayer } from '../components/ui/VideoPlayer'
@@ -178,8 +178,7 @@ export function AccidentFraudDetection() {
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
                       <VideoPlayer
-                        src={selectedVehicle.videoEvidence}
-                        annotations={[]}
+                        src={trafficLightData.sampleVideo}
                       />
                     </div>
                     <div>

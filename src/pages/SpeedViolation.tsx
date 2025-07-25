@@ -1,241 +1,111 @@
 import React, { useState } from 'react'
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts'
-import { DownloadIcon, PrinterIcon, AlertCircleIcon } from 'lucide-react'
+import { VideoPlayer } from '../components/ui/VideoPlayer'
 import { Card } from '../components/ui/card'
 import { FileUpload } from '../components/ui/fileUpload'
-import { VideoPlayer } from '../components/ui/VideoPlayer'
-import { speedViolationData } from '../utils/mockData'
+import { AlertCircleIcon } from 'lucide-react'
+
 export function SpeedViolation() {
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
-  const handleFileAccepted = (file: File) => {
+  const [response, setResponse] = useState<any | null>(null)
+
+  const handleFileAccepted = async (file: File) => {
     setVideoFile(file)
-    // Simulate analysis process
     setIsAnalyzing(true)
-    setTimeout(() => {
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const res = await fetch('http://127.0.0.1:8000/speed/run', {
+        method: 'POST',
+        body: formData,
+      })
+      const json = await res.json()
+      setResponse(json)
+    } catch (err) {
+      console.error('Upload error:', err)
+    } finally {
       setIsAnalyzing(false)
       setAnalysisComplete(true)
-    }, 3000)
+    }
   }
-  const COLORS = ['#FEE2E2', '#FECACA', '#FCA5A5', '#F87171', '#EF4444']
+
   return (
     <div className="container mx-auto px-4">
-      <div className="flex flex-col md:flex-row items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-          Speed Violation Detection
-        </h1>
-        <div className="mt-4 md:mt-0 flex space-x-2">
-          <button
-            className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg text-sm font-medium flex items-center"
-            disabled={!analysisComplete}
-          >
-            <PrinterIcon className="w-4 h-4 mr-2" />
-            Print
-          </button>
-          <button
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center"
-            disabled={!analysisComplete}
-          >
-            <DownloadIcon className="w-4 h-4 mr-2" />
-            Export Report
-          </button>
-        </div>
-      </div>
-      {/* File Upload Section */}
+      <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6">
+        Speed Violation Detection
+      </h1>
+
       <Card title="Upload Traffic Video" className="mb-6">
         <FileUpload onFileAccepted={handleFileAccepted} />
       </Card>
-      {/* Analysis Section */}
-      {(isAnalyzing || analysisComplete) && (
-        <div className="space-y-6">
-          {isAnalyzing && (
-            <Card>
-              <div className="flex flex-col items-center justify-center py-6">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mb-4"></div>
-                <p className="text-gray-700 dark:text-gray-300">
-                  Analyzing video for speed violations...
-                </p>
-              </div>
-            </Card>
-          )}
-          {analysisComplete && (
-            <>
-              <Card title="Analysis Results">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div>
-                    <VideoPlayer
-                      src={speedViolationData.sampleVideo}
-                      annotations={speedViolationData.detections}
-                    />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                      Detection Summary
-                    </h3>
-                    <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 p-4 mb-6">
-                      <div className="flex">
-                        <AlertCircleIcon className="h-5 w-5 text-red-400" />
-                        <div className="ml-3">
-                          <p className="text-sm text-red-700 dark:text-red-300">
-                            Speed violations detected with 94% confidence. 3
-                            vehicles exceeding limit.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Violation Details
-                        </h4>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Total Violations
-                            </p>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              3
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Speed Zone
-                            </p>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              55 mph
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Max Speed Detected
-                            </p>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              77 mph
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Location Type
-                            </p>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              Highway
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Violation Breakdown
-                        </h4>
-                        <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                          {speedViolationData.detections.map(
-                            (detection, index) => (
-                              <li key={index} className="flex items-center">
-                                <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
-                                {detection.description} at{' '}
-                                {Math.floor(detection.time / 60)}:
-                                {(detection.time % 60)
-                                  .toString()
-                                  .padStart(2, '0')}
-                              </li>
-                            ),
-                          )}
-                        </ul>
-                      </div>
-                      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Recommended Actions
-                        </h4>
-                        <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                          <li className="flex items-center">
-                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                            Issue citations for speed violations
-                          </li>
-                          <li className="flex items-center">
-                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                            Increase patrol presence in area
-                          </li>
-                          <li className="flex items-center">
-                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                            Review speed limit signage visibility
-                          </li>
-                        </ul>
-                      </div>
+
+      {isAnalyzing && (
+        <Card>
+          <div className="flex flex-col items-center justify-center py-6">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mb-4"></div>
+            <p className="text-gray-700 dark:text-gray-300">
+              Analyzing video for speed violations...
+            </p>
+          </div>
+        </Card>
+      )}
+
+      {analysisComplete && response && (
+        <>
+          <Card title="Detection Results" className="mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <VideoPlayer src={response.annotated_video_url} />
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  Violation Summary
+                </h3>
+                <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 p-4 mb-6">
+                  <div className="flex">
+                    <AlertCircleIcon className="h-5 w-5 text-red-400" />
+                    <div className="ml-3">
+                      <p className="text-sm text-red-700 dark:text-red-300">
+                        {response.summary.total_violations} violations detected
+                        from {response.summary.total_vehicles} vehicles.
+                      </p>
                     </div>
                   </div>
                 </div>
-              </Card>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card title="Speed Violation Ranges">
-                  <div className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={speedViolationData.speedRanges}
-                        margin={{
-                          top: 20,
-                          right: 30,
-                          left: 20,
-                          bottom: 5,
-                        }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="range" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="count" name="Violations" fill="#EF4444" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </Card>
-                <Card title="Time of Day Distribution">
-                  <div className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={speedViolationData.timeDistribution}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="count"
-                          label={({ name, percent }) =>
-                            `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`
-                          }
-                        >
-                          {speedViolationData.timeDistribution.map(
-                            (entry, index) => (
-                              <Cell
-                                key={`cell-${index}`}
-                                fill={COLORS[index % COLORS.length]}
-                              />
-                            ),
-                          )}
-                        </Pie>
-                        <Tooltip />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </Card>
+
+                <div className="overflow-y-auto max-h-[400px]">
+                  {response.vehicles.map((v: any, index: number) => (
+                    <div
+                      key={index}
+                      className="mb-3 p-3 border rounded-md dark:border-gray-700"
+                    >
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                        Vehicle {v.vehicle_id} ({v.vehicle_type})
+                      </p>
+                      <p className="text-xs text-gray-700 dark:text-gray-200">Max Speed: {v.max_speed} km/h</p>
+                      <p className="text-xs text-gray-700 dark:text-gray-200">Avg Speed: {v.avg_speed} km/h</p>
+                      <p className="text-xs text-gray-700 dark:text-gray-200">
+                        Total Violations: {v.total_violations}
+                      </p>
+                      {v.violations.length > 0 && (
+                        <ul className="mt-2 pl-4 text-xs text-red-600 dark:text-red-400 list-disc">
+                          {v.violations.map((violation: any, idx: number) => (
+                            <li key={idx}>
+                              {violation.vehicle_type} #{violation.vehicle_id} - {violation.speed} km/h
+                              (limit: {violation.speed_limit} km/h), excess: {violation.excess_speed} km/h
+                              at {new Date(violation.timestamp).toLocaleTimeString()}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </>
-          )}
-        </div>
+            </div>
+          </Card>
+        </>
       )}
     </div>
   )

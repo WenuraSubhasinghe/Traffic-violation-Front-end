@@ -81,7 +81,6 @@ export function TrafficLightViolations() {
                   <div>
                     <VideoPlayer
                       src={trafficLightData.sampleVideo}
-                      annotations={trafficLightData.detections}
                     />
                   </div>
                   <div>
