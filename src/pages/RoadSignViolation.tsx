@@ -78,7 +78,6 @@ export function RoadSignViolation() {
                   <div>
                     <VideoPlayer
                       src={roadSignData.sampleVideo}
-                      annotations={roadSignData.detections}
                     />
                   </div>
                   <div>

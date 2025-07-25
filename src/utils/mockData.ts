@@ -163,7 +163,7 @@ export const laneViolationData = {
 // Traffic Light Violation Data
 export const trafficLightData = {
   sampleVideo:
-    'https://assets.mixkit.co/videos/preview/mixkit-time-lapse-of-a-city-intersection-4409-large.mp4',
+    'src/inputs/highway.mp4',
   detections: [
     {
       time: 2.1,
@@ -203,7 +203,7 @@ export const trafficLightData = {
 // Speed Violation Data
 export const speedViolationData = {
   sampleVideo:
-    'https://assets.mixkit.co/videos/preview/mixkit-highway-in-the-middle-of-a-mountain-range-4633-large.mp4',
+    'src/inputs/highway.mp4',
   detections: [
     {
       time: 1.5,
@@ -244,7 +244,7 @@ export const speedViolationData = {
 // Road Sign Violation Data
 export const roadSignData = {
   sampleVideo:
-    'https://assets.mixkit.co/videos/preview/mixkit-traffic-in-a-big-city-at-night-time-lapse-11111-large.mp4',
+    'src/inputs/highway.mp4',
   detections: [
     {
       time: 2.3,

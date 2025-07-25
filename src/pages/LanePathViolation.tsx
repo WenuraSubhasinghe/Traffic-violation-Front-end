@@ -78,7 +78,6 @@ export function LanePathViolation() {
                   <div>
                     <VideoPlayer
                       src={laneViolationData.sampleVideo}
-                      annotations={laneViolationData.detections}
                     />
                   </div>
                   <div>
