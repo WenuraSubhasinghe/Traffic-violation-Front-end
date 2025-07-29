@@ -1,36 +1,40 @@
 import React, { useState } from 'react'
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts'
 import { DownloadIcon, PrinterIcon, AlertCircleIcon } from 'lucide-react'
 import { Card } from '../components/ui/card'
 import { FileUpload } from '../components/ui/fileUpload'
 import { VideoPlayer } from '../components/ui/VideoPlayer'
-import { laneViolationData } from '../utils/mockData'
+
 export function LanePathViolation() {
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
-  const handleFileAccepted = (file: File) => {
+  const [response, setResponse] = useState<any | null>(null)
+
+  const handleFileAccepted = async (file: File) => {
     setVideoFile(file)
-    // Simulate analysis process
     setIsAnalyzing(true)
-    setTimeout(() => {
+    setAnalysisComplete(false)
+    setResponse(null)
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const res = await fetch('http://127.0.0.1:8000/lanechange/run', {
+        method: 'POST',
+        body: formData,
+      })
+      const json = await res.json()
+      setResponse(json)
+    } catch (err) {
+      console.error('Upload error:', err)
+      setResponse({ detail: 'Upload or processing failed.' })
+    } finally {
       setIsAnalyzing(false)
       setAnalysisComplete(true)
-    }, 3000)
+    }
   }
-  const COLORS = ['#3B82F6', '#93C5FD', '#60A5FA', '#2563EB']
+
   return (
     <div className="container mx-auto px-4">
       <div className="flex flex-col md:flex-row items-center justify-between mb-6">
@@ -66,58 +70,93 @@ export function LanePathViolation() {
               <div className="flex flex-col items-center justify-center py-6">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
                 <p className="text-gray-700 dark:text-gray-300">
-                  Analyzing video for lane violations...
+                  Analyzing video for lane changes...
                 </p>
               </div>
             </Card>
           )}
-          {analysisComplete && (
-            <>
-              <Card title="Analysis Results">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div>
-                    <VideoPlayer src={laneViolationData.sampleVideo} />
+          {analysisComplete && response && (
+            <Card title="Analysis Results">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                  {response.annotated_video_url && (
+                    <VideoPlayer src={response.annotated_video_url.replace(
+                      'http://127.0.0.1:8000/static/',
+                      '/static/'
+                    )} />
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                    Lane Change Detection Results
+                  </h3>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 p-4 mb-6">
+                    <div className="flex">
+                      <AlertCircleIcon className="h-5 w-5 text-blue-400" />
+                      <div className="ml-3">
+                        {response?.summary ? (
+                          <>
+                            <p className="text-sm text-blue-700 dark:text-blue-300">
+                              {response.summary.total_detected_lane_changes} lane change{response.summary.total_detected_lane_changes !== 1 ? 's' : ''} detected from {response.summary.total_tracked_vehicles} vehicles tracked.
+                            </p>
+                            <p className="text-sm text-blue-700 dark:text-blue-300">
+                              {response.summary.vehicles_with_lane_changes} vehicle{response.summary.vehicles_with_lane_changes !== 1 ? 's' : ''} made a lane change.
+                            </p>
+                          </>
+                        ) : response?.detail ? (
+                          <span className="text-red-600">{response.detail}</span>
+                        ) : (
+                          <span>No summary available.</span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                      Lane Change Detection Results
-                    </h3>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 p-4 mb-6">
-                      <div className="flex">
-                        <AlertCircleIcon className="h-5 w-5 text-blue-400" />
-                        <div className="ml-3">
-                          <p className="text-sm text-blue-700 dark:text-blue-300">
-                            {laneViolationData.summary.total_lane_changes} lane change detected from {laneViolationData.summary.total_vehicles} vehicles tracked.
+                  <div className="overflow-y-auto max-h-[400px] space-y-4">
+                    {Array.isArray(response?.vehicles) && response.vehicles.length > 0 ? (
+                      response.vehicles.map((vehicle: any, vIdx: number) => (
+                        <div
+                          key={vIdx}
+                          className="mb-3 p-3 border rounded-md dark:border-gray-700"
+                        >
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            Vehicle {vehicle.vehicle_id}
                           </p>
+                          {vehicle.plates && vehicle.plates.length > 0 && (
+                            <p className="text-xs text-gray-700 dark:text-gray-200 mb-1">
+                              Plates: {vehicle.plates.filter(p => p).join(', ') || 'N/A'}
+                            </p>
+                          )}
+                          <p className="text-xs text-gray-700 dark:text-gray-200">
+                            Lane Changes: {vehicle.total_lane_changes}
+                          </p>
+                          {Array.isArray(vehicle.lane_changes) && vehicle.lane_changes.length > 0 && (
+                            <ul className="mt-2 pl-4 text-xs text-blue-700 dark:text-blue-400 list-disc">
+                              {vehicle.lane_changes.map((event: any, eidx: number) => (
+                                <li key={eidx}>
+                                  Changed from lane {event.from_lane} to lane {event.to_lane}
+                                  {event.timestamp && (
+                                    <> at {typeof event.timestamp === 'number'
+                                      ? new Date(event.timestamp * 1000).toLocaleTimeString()
+                                      : event.timestamp}</>
+                                  )}
+                                  {event.plate_number && (
+                                    <> (Plate: {event.plate_number || 'N/A'})</>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                         </div>
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Lane Change Details
-                        </h4>
-                        <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                          {laneViolationData.lane_changes.map((change, idx) => (
-                            <li key={idx} className="flex flex-col">
-                              <span>
-                                <strong>Vehicle ID:</strong> {change.vehicle_id}
-                              </span>
-                              <span>
-                                <strong>Plate number:</strong> {change.plate_number || 'N/A'}
-                              </span>
-                              <span>
-                                <strong>Time:</strong> {change.timestamp}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
+                      ))
+                    ) : response?.detail ? (
+                      <div className="text-red-600">{response.detail}</div>
+                    ) : (
+                      <div>No vehicles with lane changes detected.</div>
+                    )}
                   </div>
                 </div>
-              </Card>
-            </>
+              </div>
+            </Card>
           )}
         </div>
       )}
