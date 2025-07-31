@@ -39,7 +39,7 @@ export function LanePathViolation() {
     <div className="container mx-auto px-4">
       <div className="flex flex-col md:flex-row items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-          Lane Path Violation
+          Lane Change Detection
         </h1>
         <div className="mt-4 md:mt-0 flex space-x-2">
           <button
