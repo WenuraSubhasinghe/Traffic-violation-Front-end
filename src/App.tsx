@@ -10,8 +10,9 @@ import { AccidentFraudDetection } from './pages/AccidentFraudDetection'
 import { LanePathViolation } from './pages/LanePathViolation'
 import { TrafficLightViolations } from './pages/TrafficLightViolations'
 import { SpeedViolation } from './pages/SpeedViolation'
-import { RoadSignViolation } from './pages/RoadSignViolation'
 import { UTurnDetection } from './pages/UTurnDetection'
+import { LaneLineDetection } from './pages/LaneLineDetection'
+import { RoadSignDetection } from './pages/RoadSignDetection'
 export function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   return (
@@ -39,8 +40,9 @@ export function App() {
                   element={<TrafficLightViolations />}
                 />
                 <Route path="/speed-violation" element={<SpeedViolation />} />
-                <Route path="/road-sign" element={<RoadSignViolation />} />
+                <Route path="/road-sign" element={<RoadSignDetection />} />
                 <Route path="/u-turn-detection" element={<UTurnDetection />} />
+                <Route path="/lane-line-detection" element={<LaneLineDetection />} />
               </Routes>
             </main>
           </div>

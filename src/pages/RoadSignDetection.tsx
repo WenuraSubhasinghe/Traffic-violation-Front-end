@@ -1,23 +1,10 @@
 import React, { useState } from 'react'
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts'
+import { VideoPlayer } from '../components/ui/VideoPlayer'
 import { DownloadIcon, PrinterIcon, AlertCircleIcon } from 'lucide-react'
 import { Card } from '../components/ui/card'
 import { FileUpload } from '../components/ui/fileUpload'
-import { VideoPlayer } from '../components/ui/VideoPlayer'
-import { laneViolationData } from '../utils/mockData'
-export function LanePathViolation() {
+import { roadSignData } from '../utils/mockData'
+export function RoadSignDetection() {
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
@@ -30,12 +17,12 @@ export function LanePathViolation() {
       setAnalysisComplete(true)
     }, 3000)
   }
-  const COLORS = ['#3B82F6', '#93C5FD', '#60A5FA', '#2563EB']
+  const COLORS = ['#8B5CF6', '#A78BFA', '#C4B5FD', '#DDD6FE', '#EDE9FE']
   return (
     <div className="container mx-auto px-4">
       <div className="flex flex-col md:flex-row items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-          Lane Change Detection
+          Road Sign Detection
         </h1>
         <div className="mt-4 md:mt-0 flex space-x-2">
           <button
@@ -64,9 +51,9 @@ export function LanePathViolation() {
           {isAnalyzing && (
             <Card>
               <div className="flex flex-col items-center justify-center py-6">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mb-4"></div>
                 <p className="text-gray-700 dark:text-gray-300">
-                  Analyzing video for lane change detections...
+                  Analyzing video for road sign detections...
                 </p>
               </div>
             </Card>
@@ -76,44 +63,31 @@ export function LanePathViolation() {
               <Card title="Analysis Results">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div>
-                    <VideoPlayer src={laneViolationData.sampleVideo} />
+                    <VideoPlayer
+                      src={roadSignData.sampleVideo}
+                    />
                   </div>
                   <div>
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                      Lane Change Detection Results
+                      Sign Detection Summary
                     </h3>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 p-4 mb-6">
-                      <div className="flex">
-                        <AlertCircleIcon className="h-5 w-5 text-blue-400" />
-                        <div className="ml-3">
-                          <p className="text-sm text-blue-700 dark:text-blue-300">
-                            {laneViolationData.summary.total_lane_changes} lane change detected from {laneViolationData.summary.total_vehicles} vehicles tracked.
-                          </p>
-                        </div>
+                    <div className="bg-purple-50 dark:bg-purple-900/20 border-l-4 border-purple-400 p-4 mb-6">
+                    <div className="flex">
+                      <AlertCircleIcon className="h-5 w-5 text-purple-400" />
+                      <div className="ml-3">
+                        <p className="text-sm text-purple-700 dark:text-purple-300">
+                          {roadSignData.summary.total_signs} road signs detected with average confidence of {roadSignData.summary.avg_confidence}%.
+                        </p>
                       </div>
                     </div>
-                    <div className="space-y-4">
-                      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Lane Change Details
-                        </h4>
-                        <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                          {laneViolationData.lane_changes.map((change, idx) => (
-                            <li key={idx} className="flex flex-col">
-                              <span>
-                                <strong>Vehicle ID:</strong> {change.vehicle_id}
-                              </span>
-                              <span>
-                                <strong>Plate number:</strong> {change.plate_number || 'N/A'}
-                              </span>
-                              <span>
-                                <strong>Time:</strong> {change.timestamp}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
+                    <ul className="mt-3 pl-4 text-sm text-gray-700 dark:text-gray-200 list-disc">
+                      {roadSignData.detections.map((detection, idx) => (
+                        <li key={idx}>
+                          {detection.sign_type} sign detected at {Math.floor(detection.time / 60)}:{(detection.time % 60).toString().padStart(2, '0')} (confidence: {(detection.confidence * 100).toFixed(1)}%)
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                   </div>
                 </div>
               </Card>

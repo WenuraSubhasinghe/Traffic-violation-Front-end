@@ -133,10 +133,23 @@ export const laneViolationData = {
     },
   ],
 }
+// Lane line detections
+export const laneLineDetectionData = {
+  sampleVideo: 'src/inputs/lane_line_output.mp4',
+  summary: {
+    total_lane_lines: 3,
+  },
+  lane_lines: [
+    { type: 'Solid', position: 'Left', confidence: 0.98 },
+    { type: 'Dashed', position: 'Center', confidence: 0.95 },
+    { type: 'Solid', position: 'Right', confidence: 0.97 },
+  ],
+}
+
 // Traffic Light Violation Data
 export const trafficLightData = {
   sampleVideo:
-    'src/inputs/highway.mp4',
+    'src/inputs/red_light_violation.mp4',
   detections: [
     {
       time: 2.1,
@@ -216,42 +229,26 @@ export const speedViolationData = {
 }
 // Road Sign Violation Data
 export const roadSignData = {
-  sampleVideo:
-    'src/inputs/highway.mp4',
+  sampleVideo: 'src/inputs/road_signs.mp4',
+  summary: {
+    total_signs: 12,
+    avg_confidence: 93.5,
+  },
   detections: [
-    {
-      time: 2.3,
-      type: 'Road Sign',
-      description: 'Stop sign violation',
-      confidence: 0.92,
-      boundingBox: { x: 0.5, y: 0.4, width: 0.2, height: 0.15 },
-    },
-    {
-      time: 5.1,
-      type: 'Road Sign',
-      description: 'No entry violation',
-      confidence: 0.89,
-      boundingBox: { x: 0.3, y: 0.5, width: 0.2, height: 0.15 },
-    },
-    {
-      time: 8.6,
-      type: 'Road Sign',
-      description: 'No U-turn violation',
-      confidence: 0.94,
-      boundingBox: { x: 0.6, y: 0.5, width: 0.2, height: 0.15 },
-    },
+    { time: 2.1, sign_type: 'Stop', confidence: 0.97 },
+    { time: 5.4, sign_type: 'Yield', confidence: 0.91 },
+    { time: 8.9, sign_type: 'Speed Limit', confidence: 0.95 },
+    { time: 12.3, sign_type: 'No Parking', confidence: 0.89 },
+    // ...
   ],
-  signTypeViolations: [
-    { name: 'Stop', value: 48 },
-    { name: 'Yield', value: 27 },
-    { name: 'No Entry', value: 19 },
-    { name: 'No U-Turn', value: 15 },
-    { name: 'No Parking', value: 14 },
+  signTypeCounts: [
+    { name: 'Stop', value: 5 },
+    { name: 'Yield', value: 3 },
+    // ...
   ],
   locationDistribution: [
-    { location: 'Urban', count: 67 },
-    { location: 'Suburban', count: 34 },
-    { location: 'Rural', count: 22 },
+    { location: 'Main & 1st', count: 4 },
+    // ...
   ],
 }
 // Accident Fraud Data
@@ -358,6 +355,81 @@ export const uTurnDetectionData = {
       plate_number: '301 - 8846',
       angle: 180.0,
       timestamp: '0:09',
+    },
+  ],
+}
+
+export const speedViolationMockData = {
+  summary: {
+    total_vehicles: 5,
+    total_violations: 3,
+  },
+  vehicles: [
+    {
+      vehicle_id: 1,
+      vehicle_type: 'Car',
+      max_speed: 78,
+      avg_speed: 65,
+      total_violations: 1,
+      violations: [
+        {
+          vehicle_id: 1,
+          vehicle_type: 'Car',
+          speed: 78,
+          speed_limit: 60,
+          excess_speed: 18,
+          timestamp: '2024-07-25T10:15:00Z',
+        },
+      ],
+    },
+    {
+      vehicle_id: 2,
+      vehicle_type: 'Truck',
+      max_speed: 62,
+      avg_speed: 58,
+      total_violations: 0,
+      violations: [],
+    },
+    {
+      vehicle_id: 3,
+      vehicle_type: 'Car',
+      max_speed: 92,
+      avg_speed: 80,
+      total_violations: 2,
+      violations: [
+        {
+          vehicle_id: 3,
+          vehicle_type: 'Car',
+          speed: 92,
+          speed_limit: 60,
+          excess_speed: 32,
+          timestamp: '2024-07-25T10:17:00Z',
+        },
+        {
+          vehicle_id: 3,
+          vehicle_type: 'Car',
+          speed: 85,
+          speed_limit: 60,
+          excess_speed: 25,
+          timestamp: '2024-07-25T10:18:30Z',
+        },
+      ],
+    },
+    {
+      vehicle_id: 4,
+      vehicle_type: 'Bus',
+      max_speed: 59,
+      avg_speed: 54,
+      total_violations: 0,
+      violations: [],
+    },
+    {
+      vehicle_id: 5,
+      vehicle_type: 'Car',
+      max_speed: 70,
+      avg_speed: 66,
+      total_violations: 0,
+      violations: [],
     },
   ],
 }

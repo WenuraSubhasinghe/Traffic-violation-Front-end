@@ -39,9 +39,14 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       icon: ShieldAlertIcon,
     },
     {
-      name: 'Lane Violation',
+      name: 'Lane Change Detection',
       path: '/lane-violation',
       icon: BoxIcon,
+    },
+    {
+      name: 'Lane Line Detection',
+      path: '/lane-line-detection',
+      icon: LineChartIcon,
     },
     {
       name: 'Traffic Light',

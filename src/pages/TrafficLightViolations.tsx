@@ -93,7 +93,7 @@ export function TrafficLightViolations() {
                         <div className="ml-3">
                           <p className="text-sm text-green-700 dark:text-green-300">
                             Traffic light violations detected with 96%
-                            confidence. 3 violations identified.
+                            confidence. 1 violations identified.
                           </p>
                         </div>
                       </div>
@@ -109,7 +109,7 @@ export function TrafficLightViolations() {
                               Total Violations
                             </p>
                             <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              3
+                              1
                             </p>
                           </div>
                           <div>
@@ -130,113 +130,18 @@ export function TrafficLightViolations() {
                           </div>
                           <div>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Intersection
+                              Number Plate
                             </p>
                             <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              Main & 5th Ave
+                              N/A
                             </p>
                           </div>
                         </div>
-                      </div>
-                      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Violation Breakdown
-                        </h4>
-                        <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                          {trafficLightData.detections.map(
-                            (detection, index) => (
-                              <li key={index} className="flex items-center">
-                                <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                                {detection.description} at{' '}
-                                {Math.floor(detection.time / 60)}:
-                                {(detection.time % 60)
-                                  .toString()
-                                  .padStart(2, '0')}
-                              </li>
-                            ),
-                          )}
-                        </ul>
-                      </div>
-                      <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Recommended Actions
-                        </h4>
-                        <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-                          <li className="flex items-center">
-                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                            Issue citations for traffic light violations
-                          </li>
-                          <li className="flex items-center">
-                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                            Review intersection signal timing
-                          </li>
-                          <li className="flex items-center">
-                            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                            Consider red light camera installation
-                          </li>
-                        </ul>
                       </div>
                     </div>
                   </div>
                 </div>
               </Card>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card title="Traffic Light Violation Types">
-                  <div className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={trafficLightData.violationTypes}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={80}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, percent }) =>
-                            `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`
-                          }
-                        >
-                          {trafficLightData.violationTypes.map(
-                            (entry, index) => (
-                              <Cell
-                                key={`cell-${index}`}
-                                fill={COLORS[index % COLORS.length]}
-                              />
-                            ),
-                          )}
-                        </Pie>
-                        <Tooltip />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </Card>
-
-                <Card title="Intersection Violation Hotspots">
-                  <div className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={trafficLightData.intersectionHotspots}
-                        margin={{
-                          top: 20,
-                          right: 30,
-                          left: 20,
-                          bottom: 5,
-                        }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="intersection" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="count" name="Violations" fill="#10B981" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </Card>
-              </div>
             </>
           )}
         </div>
