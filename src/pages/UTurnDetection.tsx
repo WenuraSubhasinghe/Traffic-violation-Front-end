@@ -9,9 +9,11 @@
     const [isAnalyzing, setIsAnalyzing] = useState(false)
     const [analysisComplete, setAnalysisComplete] = useState(false)
     const [response, setResponse] = useState<any | null>(null)
+    const [filename, setFilename] = useState<string | null>(null);
 
     const handleFileAccepted = async (file: File) => {
       setVideoFile(file)
+      setFilename(file.name)
       setIsAnalyzing(true)
       setAnalysisComplete(false)
       setResponse(null)
@@ -60,7 +62,13 @@
             <Card title="Detection Results" className="mb-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {response.annotated_video_url &&
-                  <VideoPlayer src={response.annotated_video_url.replace('http://127.0.0.1:8000/static/', '/static/')} />
+                   <video
+                    src={`http://127.0.0.1:8000/static/uturn_${filename}`}
+                    controls
+                    autoPlay
+                    muted
+                    width={640}
+                    />
                 }
 
                 <div>
