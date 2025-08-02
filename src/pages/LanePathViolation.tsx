@@ -2,16 +2,17 @@ import React, { useState } from 'react'
 import { DownloadIcon, PrinterIcon, AlertCircleIcon } from 'lucide-react'
 import { Card } from '../components/ui/card'
 import { FileUpload } from '../components/ui/fileUpload'
-import { VideoPlayer } from '../components/ui/VideoPlayer'
 
 export function LanePathViolation() {
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
   const [response, setResponse] = useState<any | null>(null)
+  const [filename, setFilename] = useState<string | null>(null);
 
   const handleFileAccepted = async (file: File) => {
     setVideoFile(file)
+    setFilename(file.name)
     setIsAnalyzing(true)
     setAnalysisComplete(false)
     setResponse(null)
@@ -39,7 +40,7 @@ export function LanePathViolation() {
     <div className="container mx-auto px-4">
       <div className="flex flex-col md:flex-row items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-          Lane Change Detection
+          Lane Path Violation
         </h1>
         <div className="mt-4 md:mt-0 flex space-x-2">
           <button
@@ -80,11 +81,14 @@ export function LanePathViolation() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   {response.annotated_video_url && (
-                    <VideoPlayer src={response.annotated_video_url.replace(
-                      'http://127.0.0.1:8000/static/',
-                      '/static/'
-                    )} />
-                  )}
+                    <video
+                    src={`http://127.0.0.1:8000/static/lanechange_${filename}`}
+                    controls
+                    autoPlay
+                    muted
+                    width={640}
+                    />
+                                  )}
                 </div>
                 <div>
                   <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
@@ -123,7 +127,7 @@ export function LanePathViolation() {
                           </p>
                           {vehicle.plates && vehicle.plates.length > 0 && (
                             <p className="text-xs text-gray-700 dark:text-gray-200 mb-1">
-                              Plates: {vehicle.plates.filter(p => p).join(', ') || 'N/A'}
+                              Plates: {vehicle.plates.filter((p: any) => p).join(', ') || 'N/A'}
                             </p>
                           )}
                           <p className="text-xs text-gray-700 dark:text-gray-200">
