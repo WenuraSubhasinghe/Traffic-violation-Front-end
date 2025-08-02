@@ -8,10 +8,12 @@ export function RoadSignDetection() {
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
+  const [filename, setFilename] = useState<string | null>(null);
   const handleFileAccepted = (file: File) => {
     setVideoFile(file)
     // Simulate analysis process
     setIsAnalyzing(true)
+    setFilename(file.name)
     setTimeout(() => {
       setIsAnalyzing(false)
       setAnalysisComplete(true)
@@ -63,8 +65,12 @@ export function RoadSignDetection() {
               <Card title="Analysis Results">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div>
-                    <VideoPlayer
-                      src={roadSignData.sampleVideo}
+                    <video
+                    src={`http://127.0.0.1:8000/static/signdetect_${filename}`}
+                    controls
+                    autoPlay
+                    muted
+                    width={640}
                     />
                   </div>
                   <div>
