@@ -13,6 +13,7 @@ import { SpeedViolation } from './pages/SpeedViolation'
 import { UTurnDetection } from './pages/UTurnDetection'
 import { LaneLineDetection } from './pages/LaneLineDetection'
 import { RoadSignDetection } from './pages/RoadSignDetection'
+import { LanePathEval } from './pages/LanePathEval'
 export function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   return (
@@ -43,6 +44,7 @@ export function App() {
                 <Route path="/road-sign" element={<RoadSignDetection />} />
                 <Route path="/u-turn-detection" element={<UTurnDetection />} />
                 <Route path="/lane-line-detection" element={<LaneLineDetection />} />
+                <Route path="/lane-path-eval" element ={<LanePathEval/>}/>
               </Routes>
             </main>
           </div>

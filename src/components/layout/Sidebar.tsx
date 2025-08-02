@@ -10,6 +10,7 @@ import {
   XIcon,
   BoxIcon,
   RotateCcwIcon,
+  ArrowUpDown,
 } from 'lucide-react'
 type SidebarProps = {
   isOpen: boolean
@@ -67,6 +68,11 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       name: 'U-Turn Detection',
       path: '/u-turn-detection',
       icon: RotateCcwIcon,
+    },
+        {
+      name: 'Lane Path Eval',
+      path: '/lane-path-eval',
+      icon: ArrowUpDown,
     },
   ]
   return (
