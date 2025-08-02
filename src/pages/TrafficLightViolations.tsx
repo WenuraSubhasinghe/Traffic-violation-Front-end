@@ -1,36 +1,70 @@
 import React, { useState } from 'react'
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts'
 import { DownloadIcon, PrinterIcon, AlertCircleIcon } from 'lucide-react'
 import { Card } from '../components/ui/card'
 import { FileUpload } from '../components/ui/fileUpload'
 import { VideoPlayer } from '../components/ui/VideoPlayer'
-import { trafficLightData } from '../utils/mockData'
+import axiosClient from '../api/axiosClient'
+
+type Violation = {
+  vehicle_id: string;
+  frame_number: number;
+  confidence: number;
+  detection_method: string;
+  timestamp: string;
+};
+
+type DetectionSummary = {
+  output_path: string;
+  summary: {
+    total_frames: number;
+    total_violations: number;
+    unique_violators: number;
+    violations: Violation[];
+  };
+};
+
 export function TrafficLightViolations() {
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
-  const handleFileAccepted = (file: File) => {
-    setVideoFile(file)
-    // Simulate analysis process
-    setIsAnalyzing(true)
-    setTimeout(() => {
-      setIsAnalyzing(false)
-      setAnalysisComplete(true)
-    }, 3000)
+  const [detectionSummary, setDetectionSummary] = useState<DetectionSummary | null>(null);
+
+  const handleFileAccepted = async (acceptedFile: File) => {
+    setVideoFile(acceptedFile);
+    setIsAnalyzing(true);
+    setAnalysisComplete(false);
+    setDetectionSummary(null);
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', acceptedFile);
+
+      const response = await axiosClient.post('/light-violation/run', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setDetectionSummary(response.data);
+    } catch (error) {
+      console.error('Error analyzing file:', error);
+    } finally {
+      setIsAnalyzing(false);
+      setAnalysisComplete(true);
+    }
   }
+
+  // Helper function to format timestamp
+  const formatTimestamp = (timestamp: string) => {
+    return new Date(timestamp).toLocaleString();
+  }
+
+  // Helper function to calculate average confidence
+  const calculateAverageConfidence = (violations: Violation[]) => {
+    if (!violations || violations.length === 0) return 0;
+    const total = violations.reduce((sum, violation) => sum + violation.confidence, 0);
+    return (total / violations.length).toFixed(1);
+  }
+
   const COLORS = ['#10B981', '#34D399', '#6EE7B7']
+
   return (
     <div className="container mx-auto px-4">
       <div className="flex flex-col md:flex-row items-center justify-between mb-6">
@@ -74,26 +108,37 @@ export function TrafficLightViolations() {
             </Card>
           )}
 
-          {analysisComplete && (
+          {analysisComplete && detectionSummary && (
             <>
               <Card title="Analysis Results">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div>
                     <VideoPlayer
-                      src={trafficLightData.sampleVideo}
+                      src={detectionSummary.output_path}
                     />
                   </div>
                   <div>
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                       Detection Summary
                     </h3>
-                    <div className="bg-green-50 dark:bg-green-900/20 border-l-4 border-green-400 p-4 mb-6">
+                    <div className={`${detectionSummary.summary.total_violations > 0 
+                      ? 'bg-red-50 dark:bg-red-900/20 border-red-400' 
+                      : 'bg-green-50 dark:bg-green-900/20 border-green-400'
+                    } border-l-4 p-4 mb-6`}>
                       <div className="flex">
-                        <AlertCircleIcon className="h-5 w-5 text-green-400" />
+                        <AlertCircleIcon className={`h-5 w-5 ${detectionSummary.summary.total_violations > 0 
+                          ? 'text-red-400' 
+                          : 'text-green-400'
+                        }`} />
                         <div className="ml-3">
-                          <p className="text-sm text-green-700 dark:text-green-300">
-                            Traffic light violations detected with 96%
-                            confidence. 1 violations identified.
+                          <p className={`text-sm ${detectionSummary.summary.total_violations > 0 
+                            ? 'text-red-700 dark:text-red-300' 
+                            : 'text-green-700 dark:text-green-300'
+                          }`}>
+                            {detectionSummary.summary.total_violations > 0 
+                              ? `${detectionSummary.summary.total_violations} traffic light violation${detectionSummary.summary.total_violations > 1 ? 's' : ''} detected with average confidence of ${calculateAverageConfidence(detectionSummary.summary.violations)}%.`
+                              : 'No traffic light violations detected.'
+                            }
                           </p>
                         </div>
                       </div>
@@ -101,23 +146,31 @@ export function TrafficLightViolations() {
                     <div className="space-y-4">
                       <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
                         <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Violation Details
+                          Analysis Overview
                         </h4>
                         <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              Total Frames
+                            </p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                              {detectionSummary.summary.total_frames}
+                            </p>
+                          </div>
                           <div>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
                               Total Violations
                             </p>
                             <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              1
+                              {detectionSummary.summary.total_violations}
                             </p>
                           </div>
                           <div>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Primary Type
+                              Unique Violators
                             </p>
                             <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              Red Light Running
+                              {detectionSummary.summary.unique_violators}
                             </p>
                           </div>
                           <div>
@@ -125,15 +178,7 @@ export function TrafficLightViolations() {
                               Average Confidence
                             </p>
                             <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              89.7%
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Number Plate
-                            </p>
-                            <p className="text-sm font-medium text-gray-900 dark:text-white">
-                              N/A
+                              {calculateAverageConfidence(detectionSummary.summary.violations)}%
                             </p>
                           </div>
                         </div>
@@ -142,6 +187,68 @@ export function TrafficLightViolations() {
                   </div>
                 </div>
               </Card>
+
+              {/* Detailed Violations */}
+              {detectionSummary.summary.violations && detectionSummary.summary.violations.length > 0 && (
+                <Card title="Violation Details">
+                  <div className="space-y-4">
+                    {detectionSummary.summary.violations.map((violation: Violation, index: number) => (
+                      <div key={index} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <div className="flex justify-between items-start mb-3">
+                          <h4 className="text-sm font-medium text-gray-900 dark:text-white">
+                            Violation #{index + 1}
+                          </h4>
+                          <span className="bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300 text-xs font-medium px-2.5 py-0.5 rounded">
+                            Red Light Running
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              Vehicle ID
+                            </p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                              {violation.vehicle_id}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              Frame
+                            </p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                              {violation.frame_number}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              Confidence
+                            </p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white">
+                              {violation.confidence}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              Detection Method
+                            </p>
+                            <p className="text-sm font-medium text-gray-900 dark:text-white capitalize">
+                              {violation.detection_method.replace('_', ' ')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Timestamp
+                          </p>
+                          <p className="text-sm text-gray-700 dark:text-gray-300">
+                            {formatTimestamp(violation.timestamp)}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
             </>
           )}
         </div>
