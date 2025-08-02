@@ -18,19 +18,19 @@ export function SpeedViolation() {
     const formData = new FormData()
     formData.append('file', file)
 
-    // try {
-    //   const res = await fetch('http://127.0.0.1:8000/speed/run', {
-    //     method: 'POST',
-    //     body: formData,
-    //   })
-    //   const json = await res.json()
-    //   setResponse(json)
-    // } catch (err) {
-    //   console.error('Upload error:', err)
-    // } finally {
-    //   setIsAnalyzing(false)
-    //   setAnalysisComplete(true)
-    // }
+    try {
+      const res = await fetch('http://127.0.0.1:8000/speed/run', {
+        method: 'POST',
+        body: formData,
+      })
+      const json = await res.json()
+      setResponse(json)
+    } catch (err) {
+      console.error('Upload error:', err)
+    } finally {
+      setIsAnalyzing(false)
+      setAnalysisComplete(true)
+    }
     setTimeout(() => {
       setResponse(speedViolationMockData)
       setIsAnalyzing(false)
