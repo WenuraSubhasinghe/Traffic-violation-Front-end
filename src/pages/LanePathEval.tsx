@@ -9,9 +9,11 @@ export function LanePathEval() {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
   const [response, setResponse] = useState<any | null>(null)
+  const [filename, setFilename] = useState<string | null>(null);
 
   const handleFileAccepted = async (file: File) => {
     setVideoFile(file)
+    setFilename(file.name)
     setIsAnalyzing(true)
     setAnalysisComplete(false)
     setResponse(null)
@@ -20,7 +22,7 @@ export function LanePathEval() {
     formData.append('file', file)
 
     try {
-      const res = await fetch('http://127.0.0.1:8000/lanechange/run', {
+      const res = await fetch('http://127.0.0.1:8000/lanepatheval/run', {
         method: 'POST',
         body: formData,
       })
@@ -39,7 +41,7 @@ export function LanePathEval() {
     <div className="container mx-auto px-4">
       <div className="flex flex-col md:flex-row items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-          Lane Change Detection
+          Lane Path Evaluation
         </h1>
         <div className="mt-4 md:mt-0 flex space-x-2">
           <button
@@ -58,10 +60,12 @@ export function LanePathEval() {
           </button>
         </div>
       </div>
+
       {/* File Upload Section */}
       <Card title="Upload Traffic Video" className="mb-6">
         <FileUpload onFileAccepted={handleFileAccepted} />
       </Card>
+
       {/* Analysis Section */}
       {(isAnalyzing || analysisComplete) && (
         <div className="space-y-6">
@@ -80,10 +84,13 @@ export function LanePathEval() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   {response.annotated_video_url && (
-                    <VideoPlayer src={response.annotated_video_url.replace(
-                      'http://127.0.0.1:8000/static/',
-                      '/static/'
-                    )} />
+                    <video
+                    src={`http://127.0.0.1:8000/static/lanepathval_${filename}`}
+                    controls
+                    autoPlay
+                    muted
+                    width={640}
+                    />
                   )}
                 </div>
                 <div>
@@ -97,11 +104,16 @@ export function LanePathEval() {
                         {response?.summary ? (
                           <>
                             <p className="text-sm text-blue-700 dark:text-blue-300">
-                              {response.summary.total_detected_lane_changes} lane change{response.summary.total_detected_lane_changes !== 1 ? 's' : ''} detected from {response.summary.total_tracked_vehicles} vehicles tracked.
+                              {response.summary.total_detected_lane_changes} lane change{response.summary.total_detected_lane_changes !== 1 ? 's' : ''} detected.
                             </p>
                             <p className="text-sm text-blue-700 dark:text-blue-300">
                               {response.summary.vehicles_with_lane_changes} vehicle{response.summary.vehicles_with_lane_changes !== 1 ? 's' : ''} made a lane change.
                             </p>
+                            {response.summary.lane_count !== undefined && (
+                              <p className="text-sm text-blue-700 dark:text-blue-300">
+                                Lane count detected: {response.summary.lane_count}
+                              </p>
+                            )}
                           </>
                         ) : response?.detail ? (
                           <span className="text-red-600">{response.detail}</span>
@@ -121,11 +133,6 @@ export function LanePathEval() {
                           <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                             Vehicle {vehicle.vehicle_id}
                           </p>
-                          {vehicle.plates && vehicle.plates.length > 0 && (
-                            <p className="text-xs text-gray-700 dark:text-gray-200 mb-1">
-                              Plates: {vehicle.plates.filter(p => p).join(', ') || 'N/A'}
-                            </p>
-                          )}
                           <p className="text-xs text-gray-700 dark:text-gray-200">
                             Lane Changes: {vehicle.total_lane_changes}
                           </p>
@@ -133,14 +140,11 @@ export function LanePathEval() {
                             <ul className="mt-2 pl-4 text-xs text-blue-700 dark:text-blue-400 list-disc">
                               {vehicle.lane_changes.map((event: any, eidx: number) => (
                                 <li key={eidx}>
-                                  Changed from lane {event.from_lane} to lane {event.to_lane}
+                                  Lane change at frame {event.frame_idx}, crossing lane boundary {event.lane_idx} ({event.direction})
                                   {event.timestamp && (
                                     <> at {typeof event.timestamp === 'number'
                                       ? new Date(event.timestamp * 1000).toLocaleTimeString()
                                       : event.timestamp}</>
-                                  )}
-                                  {event.plate_number && (
-                                    <> (Plate: {event.plate_number || 'N/A'})</>
                                   )}
                                 </li>
                               ))}
