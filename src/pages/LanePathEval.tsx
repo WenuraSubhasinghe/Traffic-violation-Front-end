@@ -2,14 +2,13 @@ import React, { useState } from 'react'
 import { DownloadIcon, PrinterIcon, AlertCircleIcon } from 'lucide-react'
 import { Card } from '../components/ui/card'
 import { FileUpload } from '../components/ui/fileUpload'
-import { VideoPlayer } from '../components/ui/VideoPlayer'
 
 export function LanePathEval() {
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
   const [response, setResponse] = useState<any | null>(null)
-  const [filename, setFilename] = useState<string | null>(null);
+  const [filename, setFilename] = useState<string | null>(null)
 
   const handleFileAccepted = async (file: File) => {
     setVideoFile(file)
@@ -85,11 +84,11 @@ export function LanePathEval() {
                 <div>
                   {response.annotated_video_url && (
                     <video
-                    src={`http://127.0.0.1:8000/static/lanepathval_${filename}`}
-                    controls
-                    autoPlay
-                    muted
-                    width={640}
+                      src={response.annotated_video_url}
+                      controls
+                      autoPlay
+                      muted
+                      width={640}
                     />
                   )}
                 </div>
@@ -107,13 +106,11 @@ export function LanePathEval() {
                               {response.summary.total_detected_lane_changes} lane change{response.summary.total_detected_lane_changes !== 1 ? 's' : ''} detected.
                             </p>
                             <p className="text-sm text-blue-700 dark:text-blue-300">
-                              {response.summary.vehicles_with_lane_changes} vehicle{response.summary.vehicles_with_lane_changes !== 1 ? 's' : ''} made a lane change.
+                              Lane count detected: {response.summary.lane_count}
                             </p>
-                            {response.summary.lane_count !== undefined && (
-                              <p className="text-sm text-blue-700 dark:text-blue-300">
-                                Lane count detected: {response.summary.lane_count}
-                              </p>
-                            )}
+                            <p className="text-sm text-gray-700 dark:text-gray-300">
+                              Processed at: {new Date(response.summary.processed_at).toLocaleString()}
+                            </p>
                           </>
                         ) : response?.detail ? (
                           <span className="text-red-600">{response.detail}</span>
@@ -124,38 +121,24 @@ export function LanePathEval() {
                     </div>
                   </div>
                   <div className="overflow-y-auto max-h-[400px] space-y-4">
-                    {Array.isArray(response?.vehicles) && response.vehicles.length > 0 ? (
-                      response.vehicles.map((vehicle: any, vIdx: number) => (
-                        <div
-                          key={vIdx}
-                          className="mb-3 p-3 border rounded-md dark:border-gray-700"
-                        >
-                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                            Vehicle {vehicle.vehicle_id}
-                          </p>
-                          <p className="text-xs text-gray-700 dark:text-gray-200">
-                            Lane Changes: {vehicle.total_lane_changes}
-                          </p>
-                          {Array.isArray(vehicle.lane_changes) && vehicle.lane_changes.length > 0 && (
-                            <ul className="mt-2 pl-4 text-xs text-blue-700 dark:text-blue-400 list-disc">
-                              {vehicle.lane_changes.map((event: any, eidx: number) => (
-                                <li key={eidx}>
-                                  Lane change at frame {event.frame_idx}, crossing lane boundary {event.lane_idx} ({event.direction})
-                                  {event.timestamp && (
-                                    <> at {typeof event.timestamp === 'number'
-                                      ? new Date(event.timestamp * 1000).toLocaleTimeString()
-                                      : event.timestamp}</>
-                                  )}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
-                      ))
-                    ) : response?.detail ? (
-                      <div className="text-red-600">{response.detail}</div>
+                    {Array.isArray(response.lane_change_events) && response.lane_change_events.length > 0 ? (
+                      <ul className="list-disc pl-4 text-sm text-blue-700 dark:text-blue-400">
+                        {response.lane_change_events.map((event: { frame_idx: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; track_id: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; lane_idx: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; direction: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; timestamp: number }, idx: React.Key | null | undefined) => (
+                          <li key={idx}>
+                            At frame {event.frame_idx}, vehicle {event.track_id} crossed lane {event.lane_idx} ({event.direction})
+                            {event.timestamp && (
+                              <>
+                                {" "}at{" "}
+                                {typeof event.timestamp === 'number'
+                                  ? new Date(event.timestamp * 1000).toLocaleTimeString()
+                                  : event.timestamp}
+                              </>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
                     ) : (
-                      <div>No vehicles with lane changes detected.</div>
+                      <div>No lane changes detected.</div>
                     )}
                   </div>
                 </div>
