@@ -1,36 +1,40 @@
 import React, { useState } from 'react'
-import {
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts'
 import { DownloadIcon, PrinterIcon, AlertCircleIcon } from 'lucide-react'
 import { Card } from '../components/ui/card'
 import { FileUpload } from '../components/ui/fileUpload'
 import { VideoPlayer } from '../components/ui/VideoPlayer'
-import { laneLineDetectionData, laneViolationData } from '../utils/mockData'
+
 export function LaneLineDetection() {
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
-  const handleFileAccepted = (file: File) => {
+  const [response, setResponse] = useState<any | null>(null)
+
+  const handleFileAccepted = async (file: File) => {
     setVideoFile(file)
-    // Simulate analysis process
     setIsAnalyzing(true)
-    setTimeout(() => {
+    setAnalysisComplete(false)
+    setResponse(null)
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const res = await fetch('http://127.0.0.1:8000/roadmarks/run', {
+        method: 'POST',
+        body: formData,
+      })
+      const json = await res.json()
+      setResponse(json)
+    } catch (err) {
+      console.error('Upload error:', err)
+      setResponse({ detail: 'Failed to analyze video. Please try again.' })
+    } finally {
       setIsAnalyzing(false)
       setAnalysisComplete(true)
-    }, 3000)
+    }
   }
-  const COLORS = ['#3B82F6', '#93C5FD', '#60A5FA', '#2563EB']
+
   return (
     <div className="container mx-auto px-4">
       <div className="flex flex-col md:flex-row items-center justify-between mb-6">
@@ -59,52 +63,64 @@ export function LaneLineDetection() {
         <FileUpload onFileAccepted={handleFileAccepted} />
       </Card>
       {/* Analysis Section */}
-      {(isAnalyzing || analysisComplete) && (
-        <div className="space-y-6">
-          {isAnalyzing && (
-            <Card>
-              <div className="flex flex-col items-center justify-center py-6">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-                <p className="text-gray-700 dark:text-gray-300">
-                  Analyzing video for lane detections...
-                </p>
-              </div>
-            </Card>
-          )}
-          {analysisComplete && (
-            <>
-                <Card title="Analysis Results">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div>
-                    <VideoPlayer src={laneLineDetectionData.sampleVideo} />
+      {isAnalyzing && (
+        <Card>
+          <div className="flex flex-col items-center justify-center py-6">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+            <p className="text-gray-700 dark:text-gray-300">
+              Analyzing video for lane detections...
+            </p>
+          </div>
+        </Card>
+      )}
+      {analysisComplete && response && (
+        <>
+          <Card title="Analysis Results" className="mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {response.annotated_video_url && (
+                <VideoPlayer
+                  src={response.annotated_video_url.replace('http://127.0.0.1:8000/static/', '/static/')}
+                />
+              )}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  Lane Line Detection Summary
+                </h3>
+                <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 p-4 mb-6">
+                  <div className="flex">
+                    <AlertCircleIcon className="h-5 w-5 text-blue-400" />
+                    <div className="ml-3">
+                      {Array.isArray(response?.filtered_counts) ? (
+                        <p className="text-sm text-blue-700 dark:text-blue-300">
+                          {response.filtered_counts.reduce((sum: number, item: any) => sum + (item.count || 0), 0)} lane lines detected (filtered, by class-specific confidence thresholds).
+                        </p>
+                      ) : response?.detail ? (
+                        <span className="text-red-600">{response.detail}</span>
+                      ) : (
+                        <span>No detection summary available.</span>
+                      )}
                     </div>
-                    <div>
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                        Lane Line Detection Results
-                    </h3>
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 p-4 mb-6">
-                        <div className="flex">
-                        <AlertCircleIcon className="h-5 w-5 text-blue-400" />
-                        <div className="ml-3">
-                            <p className="text-sm text-blue-700 dark:text-blue-300">
-                            {laneLineDetectionData.summary.total_lane_lines} lane lines detected.
-                            </p>
-                        </div>
-                        </div>
-                        <ul className="mt-3 pl-4 text-sm text-gray-700 dark:text-gray-200 list-disc">
-                        {laneLineDetectionData.lane_lines.map((line, idx) => (
-                            <li key={idx}>
-                            <strong>{line.type}</strong> line at <strong>{line.position}</strong> (confidence: {(line.confidence * 100).toFixed(1)}%)
-                            </li>
-                        ))}
-                        </ul>
-                    </div>
-                    </div>
+                  </div>
+                  <ul className="mt-3 pl-4 text-sm text-gray-700 dark:text-gray-200 list-disc">
+                    {Array.isArray(response?.filtered_counts) && response.filtered_counts.length > 0 ? (
+                      response.filtered_counts.map(
+                        (line: { class_name: string; count: number }, idx: number) => (
+                          <li key={idx}>
+                            <strong>{line.class_name}</strong> lines detected: <strong>{line.count}</strong>
+                          </li>
+                        )
+                      )
+                    ) : response?.detail ? (
+                      <span className="text-red-600">{response.detail}</span>
+                    ) : (
+                      <span>No lane detections found.</span>
+                    )}
+                  </ul>
                 </div>
-                </Card>
-            </>
-            )}
-        </div>
+              </div>
+            </div>
+          </Card>
+        </>
       )}
     </div>
   )
