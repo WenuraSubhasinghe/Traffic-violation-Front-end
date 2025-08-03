@@ -11,6 +11,7 @@ import {
   BoxIcon,
   RotateCcwIcon,
   ArrowUpDown,
+  LayoutDashboardIcon
 } from 'lucide-react'
 type SidebarProps = {
   isOpen: boolean
@@ -73,6 +74,11 @@ export function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       name: 'Lane Path Eval',
       path: '/lane-path-eval',
       icon: ArrowUpDown,
+    },
+     {
+      name: 'Legacy Plate',
+      path: '/legacy-plate',
+      icon: LayoutDashboardIcon,
     },
   ]
   return (

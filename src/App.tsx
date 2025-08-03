@@ -14,6 +14,7 @@ import { UTurnDetection } from './pages/UTurnDetection'
 import { LaneLineDetection } from './pages/LaneLineDetection'
 import { RoadSignDetection } from './pages/RoadSignDetection'
 import { LanePathEval } from './pages/LanePathEval'
+import { LegacyPlate } from './pages/LegacyPlateDetection'
 export function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   return (
@@ -45,6 +46,7 @@ export function App() {
                 <Route path="/u-turn-detection" element={<UTurnDetection />} />
                 <Route path="/lane-line-detection" element={<LaneLineDetection />} />
                 <Route path="/lane-path-eval" element ={<LanePathEval/>}/>
+                <Route path="/legacy-plate" element ={<LegacyPlate/>}/>
               </Routes>
             </main>
           </div>
